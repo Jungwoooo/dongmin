@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SC All-in-One Tool</title>
+  <style>
+    /* 스타일 설정 (이전과 유사하지만 확장됨) */
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0f172a, #020617);
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .app {
+      width: 100%;
+      max-width: 700px; /* 폭을 조금 더 넓힘 */
+      background: #0b1220;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,.5);
+    }
+    h1 { margin: 0 0 8px; text-align: center; font-size: 1.5rem; color: #60a5fa; font-weight: 800; }
+    .desc { text-align: center; color: #9ca3af; font-size: 0.9rem; margin-bottom: 20px; }
+
+    /* 모드 탭 스위처 */
+    .mode-tabs { display: flex; background: #1e293b; border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 8px; color: #9ca3af; transition: 0.2s; font-weight: 600; font-size: 0.9rem; }
+    .tab-btn.active { background: #3b82f6; color: white; shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); }
+
+    /* 플레이어 입력 리스트 */
+    .player-list { max-height: 400px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
+    /* 스크롤바 스타일 */
+    .player-list::-webkit-scrollbar { width: 6px; }
+    .player-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    .player-row {
+      display: grid;
+      grid-template-columns: 1fr 70px 90px 30px; /* 이름 종족 티어 삭제버튼 */
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+      background: #111827;
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+    }
+    input, select { padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #fff; outline: none; font-size: 0.9rem; width: 100%; }
+    input:focus, select:focus { border-color: #60a5fa; }
+    .remove-btn { color: #ef4444; cursor: pointer; text-align: center; font-weight: bold; padding: 4px; border-radius: 4px; }
+    .remove-btn:hover { background: rgba(239,68,68,0.1); }
+
+    /* 컨트롤 버튼 영역 */
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+    .ctrl-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 6px; }
+    .btn-add { background: #1e293b; color: #60a5fa; border: 1px solid #334155; }
+    .btn-add:hover { background: #334155; }
+    .main-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: #3b82f6; color: #fff; font-weight: 700; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); transition: 0.2s; }
+    .main-btn:hover { background: #2563eb; transform: translateY(-1px); }
+    .main-btn.director-color { background: #8b5cf6; /* 보라색 */ box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.5); }
+    .main-btn.director-color:hover { background: #7c3aed; }
+
+    /* 결과 영역 공통 */
+    .result-area { margin-top: 24px; display: none; padding-top: 20px; border-top: 2px dashed #334155; }
+    
+    /* 팀 밸런스 결과 스타일 */
+    .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .team-card { background: #1e293b; padding: 15px; border-radius: 12px; border-top: 4px solid #3b82f6; }
+    .team-card.team-b { border-top-color: #f87171; }
+    .team-name { font-weight: 800; margin-bottom: 12px; display: block; text-align: center; letter-spacing: 1px; }
+    .team-member { font-size: 0.95rem; margin-bottom: 6px; color: #e2e8f0; display: flex; justify-content: space-between; }
+    .team-info { margin-top: 12px; padding-top: 10px; border-top: 1px solid #334155; font-size: 0.85rem; color: #9ca3af; text-align: center; }
+
+    /* 감독전 리스트 스타일 */
+    .director-list { list-style: none; padding: 0; margin: 0; }
+    .director-item { display: flex; justify-content: space-between; padding: 10px 14px; margin-bottom: 6px; background: #1e293b; border-radius: 8px; align-items: center; }
+    .tier-badge { background: #334155; color: #fff; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; min-width: 45px; text-align: center; }
+    .tier-badge.high-tier { background: #8b5cf6; } /* 1~3티어 강조 */
+
+    footer { text-align: center; margin-top: 25px; font-size: 0.75rem; color: #6b7280; }
+
+    @media (max-width: 480px) {
+      .player-row { grid-template-columns: 1fr 60px 70px 30px; gap: 5px; }
+      .balance-grid { grid-template-columns: 1fr; } /* 모바일에서 팀 세로 배치 */
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>SC Team & Director Tool</h1>
+    
+    <div class="mode-tabs">
+      <div class="tab-btn active" onclick="switchMode('balance')" id="tabBalance">팀 밸런스 (N:N)</div>
+      <div class="tab-btn" onclick="switchMode('director')" id="tabDirector">감독전 (티어순)</div>
+    </div>
+    
+    <div class="desc" id="modeDesc">인원을 추가하고 팀을 구성하세요. (저그 인원 및 티어 합 균등)</div>
+
+    <div id="playerInputs" class="player-list">
+      </div>
+
+    <div class="controls">
+      <button class="ctrl-btn btn-add" onclick="addPlayerRow()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        인원 추가
+      </button>
+      <button class="ctrl-btn" onclick="removeLastPlayer()" style="background: #1e293b; color: #ef4444; border: 1px solid #334155;">
+         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        마지막 제거
+      </button>
+    </div>
+
+    <button id="actionBtn" class="main-btn" onclick="runAction()">팀 구성하기</button>
+
+    <div id="resultArea" class="result-area">
+        <div id="balanceResult" class="balance-grid">
+            <div class="team-card">
+                <span class="team-name" style="color: #60a5fa;">BLUE TEAM</span>
+                <div id="teamAList"></div>
+                <div class="team-info" id="teamAStat"></div>
+            </div>
+            <div class="team-card team-b">
+                <span class="team-name" style="color: #f87171;">RED TEAM</span>
+                <div id="teamBList"></div>
+                <div class="team-info" id="teamBStat"></div>
+            </div>
+        </div>
+        <ul id="directorResult" class="director-list" style="display: none;"></ul>
+    </div>
+
+    <footer>Clean UI • Local Processing • No Server Needed</footer>
+  </div>
+
+  <script>
+    let currentMode = 'balance'; // 'balance' or 'director'
+    let playerCount = 0;
+
+    // 초기 실행: 6명 세팅
+    window.onload = () => {
+        for(let i=0; i<6; i++) addPlayerRow();
+    };
+
+    // 모드 전환 함수
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById('tabBalance').classList.toggle('active', mode === 'balance');
+        document.getElementById('tabDirector').classList.toggle('active', mode === 'director');
+        
+        const actionBtn = document.getElementById('actionBtn');
+        const modeDesc = document.getElementById('modeDesc');
+        document.getElementById('resultArea').style.display = 'none';
+
+        if (mode === 'balance') {
+            actionBtn.innerText = '팀 구성하기';
+            actionBtn.classList.remove('director-color');
+            modeDesc.innerText = '인원을 추가하고 팀을 구성하세요. (저그 인원 및 티어 합 균등)';
+        } else {
+            actionBtn.innerText = '티어순 리스트 보기';
+            actionBtn.classList.add('director-color');
+            modeDesc.innerText = '모든 인원을 티어가 높은 순서대로 정렬합니다.';
+        }
+    }
+
+    // 플레이어 입력줄 추가
+    function addPlayerRow() {
+        playerCount++;
+        const container = document.getElementById('playerInputs');
+        const row = document.createElement('div');
+        row.className = 'player-row';
+        row.id = `pRow-${playerCount}`;
+        row.innerHTML = `
+          <input type="text" placeholder="이름" class="p-name">
+          <select class="p-race">
+            <option value="R">R</option>
+            <option value="Z">Z</option>
+            <option value="T">T</option>
+            <option value="P">P</option>
+          </select>
+          <select class="p-tier">
+            ${[1,2,3,4,5,6,7,8,9,10].map(t => `<option value="${t}" ${t===5 ? 'selected':''}>${t}티어</option>`).join('')}
+          </select>
+          <div class="remove-btn" onclick="removeSpecificRow('${row.id}')">✕</div>
+        `;
+        container.appendChild(row);
+        // 스크롤을 가장 아래로
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // 마지막 플레이어 제거
+    function removeLastPlayer() {
+        const container = document.getElementById('playerInputs');
+        if (container.lastChild) {
+            container.removeChild(container.lastChild);
+        }
+    }
+
+    // 특정 줄 플레이어 제거
+    function removeSpecificRow(rowId) {
+        const row = document.getElementById(rowId);
+        if (row) row.remove();
+    }
+
+    // 현재 입력된 모든 플레이어 데이터 가져오기
+    function getAllPlayers() {
+        const rows = document.querySelectorAll('.player-row');
+        let players = [];
+        rows.forEach((row, index) => {
+            const nameInput = row.querySelector('.p-name');
+            const raceSelect = row.querySelector('.p-race');
+            const tierSelect = row.querySelector('.p-tier');
+            if (nameInput && raceSelect && tierSelect) {
+                 players.push({
+                    name: nameInput.value.trim() || `선수 ${index + 1}`,
+                    race: raceSelect.value,
+                    tier: parseInt(tierSelect.value)
+                });
+            }
+        });
+        return players;
+    }
+
+    // 메인 실행 버튼 클릭 시 분기
+    function runAction() {
+        const players = getAllPlayers();
+        if (players.length === 0) {
+            alert("선수를 최소 1명 이상 입력해주세요.");
+            return;
+        }
+        
+        document.getElementById('resultArea').style.display = 'block';
+
+        if (currentMode === 'balance') {
+            runBalanceMode(players);
+        } else {
+            runDirectorMode(players);
+        }
+    }
+
+    // --- 감독전 모드 로직 ---
+    function runDirectorMode(players) {
+        document.getElementById('balanceResult').style.display = 'none';
+        const listContainer = document.getElementById('directorResult');
+        listContainer.style.display = 'block';
+
+        // 티어 오름차순 정렬 (1티어가 먼저)
+        players.sort((a, b) => a.tier - b.tier);
+
+        listContainer.innerHTML = players.map(p => `
+            <li class="director-item">
+                <div>
+                    <span style="color: ${getRaceColor(p.race)}; font-weight:bold; margin-right: 8px;">[${p.race}]</span>
+                    ${p.name}
+                </div>
+                <span class="tier-badge ${p.tier <= 3 ? 'high-tier' : ''}">${p.tier}티어</span>
+            </li>
+        `).join('');
+    }
+
+    // --- 팀 밸런스 모드 로직 ---
+    function runBalanceMode(players) {
+        if (players.length % 2 !== 0 || players.length === 0) {
+            alert("팀 밸런스를 맞추려면 총 인원이 짝수여야 합니다. (예: 2:2, 3:3, 4:4)");
+            document.getElementById('resultArea').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('directorResult').style.display = 'none';
+        document.getElementById('balanceResult').style.display = 'grid';
+
+        const teamSize = players.length / 2;
+        const combinations = getCombinations(players, teamSize);
+        
+        let bestSplit = null;
+        // 초기값 설정 (가장 나쁜 경우로 시작)
+        let minZergDiff = players.length + 1;
+        let minTierDiff = players.length * 10 + 1;
+
+        combinations.forEach(teamA => {
+            // teamA에 속하지 않은 나머지 인원을 teamB로 설정
+            const teamB = players.filter(p => !teamA.some(ta => ta.name === p.name && ta.race === p.race && ta.tier === p.tier));
+            
+            const statsA = calculateStats(teamA);
+            const statsB = calculateStats(teamB);
+
+            const zergDiff = Math.abs(statsA.zergCount - statsB.zergCount);
+            const tierDiff = Math.abs(statsA.totalTier - statsB.totalTier);
+
+            // 1순위: 저그 수 차이 최소화
+            if (zergDiff < minZergDiff) {
+                minZergDiff = zergDiff;
+                minTierDiff = tierDiff;
+                bestSplit = { teamA, teamB, statsA, statsB };
+            } 
+            // 2순위: 저그 수 차이가 같다면, 티어 합 차이 최소화
+            else if (zergDiff === minZergDiff) {
+                if (tierDiff < minTierDiff) {
+                    minTierDiff = tierDiff;
+                    bestSplit = { teamA, teamB, statsA, statsB };
+                }
+            }
+        });
+
+        if (bestSplit) displayBalanceResult(bestSplit);
+    }
+
+    function calculateStats(team) {
+        return {
+            zergCount: team.filter(p => p.race === 'Z').length,
+            totalTier: team.reduce((sum, p) => sum + p.tier, 0)
+        };
+    }
+
+    // 조합 구하기 알고리즘 (재귀)
+    function getCombinations(arr, n) {
+        if (n === 1) return arr.map(el => [el]);
+        const result = [];
+        arr.forEach((fixed, idx, origin) => {
+            const rest = origin.slice(idx + 1);
+            const combos = getCombinations(rest, n - 1);
+            const attached = combos.map(combo => [fixed, ...combo]);
+            result.push(...attached);
+        });
+        return result;
+    }
+
+    function displayBalanceResult(res) {
+        const renderTeamList = (list, targetId) => {
+            document.getElementById(targetId).innerHTML = list.map(p => `
+              <div class="team-member">
+                <span><span style="color: ${getRaceColor(p.race)}">[${p.race}]</span> ${p.name}</span>
+                <span style="opacity:0.8;">T${p.tier}</span>
+              </div>
+            `).join('');
+        };
+
+        renderTeamList(res.teamA, 'teamAList');
+        document.getElementById('teamAStat').innerHTML = `티어 합: <b>${res.statsA.totalTier}</b> / 저그: <b>${res.statsA.zergCount}</b>명`;
+
+        renderTeamList(res.teamB, 'teamBList');
+        document.getElementById('teamBStat').innerHTML = `티어 합: <b>${res.statsB.totalTier}</b> / 저그: <b>${res.statsB.zergCount}</b>명`;
+    }
+
+    function getRaceColor(race) {
+        if (race === 'Z') return '#d8b4fe'; // 연보라
+        if (race === 'R') return '#9ca3af'; // 회색 (랜덤)
+        if (race === 'T') return '#60a5fa'; // 파랑
+        if (race === 'P') return '#fde047'; // 노랑
+        return '#fff';
+    }
+
+  </script>
+</body>
+</html>
