@@ -1,358 +1,636 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>SC All-in-One Tool</title>
+  <title>극단 VLog</title>
   <style>
-    /* 스타일 설정 (이전과 유사하지만 확장됨) */
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    /* --- 기초 설정 --- */
+    :root {
+      --main-black: #111111;
+      --gray-bg: #f5f5f5;
+      --border-color: #e0e0e0;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
     body {
       margin: 0;
-      background: linear-gradient(135deg, #0f172a, #020617);
-      color: #e5e7eb;
+      background: #ffffff;
+      color: #333333;
       min-height: 100vh;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+      flex-direction: column;
+      /* ❗ 추가: 화면 밖으로 나가는 가로 요소 숨김 */
+      overflow-x: hidden; 
     }
-    .app {
+
+    /* --- 레이아웃 --- */
+    .app-container {
       width: 100%;
-      max-width: 700px; /* 폭을 조금 더 넓힘 */
-      background: #0b1220;
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,.5);
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      /* ❗ 추가: 이중 방어 */
+      overflow-x: hidden; 
     }
-    h1 { margin: 0 0 8px; text-align: center; font-size: 1.5rem; color: #60a5fa; font-weight: 800; }
-    .desc { text-align: center; color: #9ca3af; font-size: 0.9rem; margin-bottom: 20px; }
 
-    /* 모드 탭 스위처 */
-    .mode-tabs { display: flex; background: #1e293b; border-radius: 12px; padding: 4px; margin-bottom: 20px; }
-    .tab-btn { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 8px; color: #9ca3af; transition: 0.2s; font-weight: 600; font-size: 0.9rem; }
-    .tab-btn.active { background: #3b82f6; color: white; shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); }
+    /* --- 헤더 --- */
+    header {
+      background: var(--gray-bg);
+      padding: 25px 20px;
+      text-align: center;
+      border-bottom: 2px solid var(--border-color);
+    }
 
-    /* 플레이어 입력 리스트 */
-    .player-list { max-height: 400px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
-    /* 스크롤바 스타일 */
-    .player-list::-webkit-scrollbar { width: 6px; }
-    .player-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    .header-logo {
+      height: 200px; /* 기존 높이 유지 */
+      width: auto;
+      
+      /* ❗ 추가: 핸드폰 화면보다 이미지가 커지면 화면 크기에 맞춤 */
+      max-width: 100%; 
+      object-fit: contain; /* ❗ 추가: 줄어들 때 찌그러지지 않게 보호 */
+      
+      margin: -70px 0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
 
-    .player-row {
+    header p {
+      margin: 10px 0 0;
+      color: #666;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    /* --- 탭 메뉴 (상단 고정) --- */
+    .tabs {
+      display: flex;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 18px 5px;
+      text-align: center;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: #888;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .tab-btn.active {
+      color: var(--main-black);
+      border-bottom: 4px solid var(--main-black);
+      background: #fafafa;
+    }
+
+    /* --- 콘텐츠 공통 --- */
+    .content-area {
+      padding: 30px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+      flex-grow: 1;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      border-left: 5px solid var(--main-black);
+      padding-left: 15px;
+      margin: 0 0 25px 0;
+      letter-spacing: -0.5px;
+    }
+
+    .section-box {
+      background: #f9fafb;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border: 1px solid #eee;
+      line-height: 1.7;
+    }
+
+    /* --- [탭1] 배우 신청 --- */
+    .btn-apply {
+      display: block;
+      width: 100%;
+      padding: 20px;
+      background: var(--main-black);
+      color: #fff;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: 0.2s;
+    }
+
+    .btn-apply:hover {
+      transform: translateY(-2px);
+      background: #333;
+    }
+
+    .poster-img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .feature-grid {
       display: grid;
-      grid-template-columns: 1fr 70px 90px 30px; /* 이름 종족 티어 삭제버튼 */
-      gap: 8px;
-      margin-bottom: 8px;
-      align-items: center;
-      background: #111827;
-      padding: 6px;
-      border-radius: 10px;
-      border: 1px solid #1f2937;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
     }
-    input, select { padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #fff; outline: none; font-size: 0.9rem; width: 100%; }
-    input:focus, select:focus { border-color: #60a5fa; }
-    .remove-btn { color: #ef4444; cursor: pointer; text-align: center; font-weight: bold; padding: 4px; border-radius: 4px; }
-    .remove-btn:hover { background: rgba(239,68,68,0.1); }
 
-    /* 컨트롤 버튼 영역 */
-    .controls { display: flex; gap: 10px; margin-bottom: 20px; }
-    .ctrl-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 6px; }
-    .btn-add { background: #1e293b; color: #60a5fa; border: 1px solid #334155; }
-    .btn-add:hover { background: #334155; }
-    .main-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: #3b82f6; color: #fff; font-weight: 700; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); transition: 0.2s; }
-    .main-btn:hover { background: #2563eb; transform: translateY(-1px); }
-    .main-btn.director-color { background: #8b5cf6; /* 보라색 */ box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.5); }
-    .main-btn.director-color:hover { background: #7c3aed; }
+    .feature-card {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
 
-    /* 결과 영역 공통 */
-    .result-area { margin-top: 24px; display: none; padding-top: 20px; border-top: 2px dashed #334155; }
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      border-color: var(--main-black);
+    }
+
+    .feature-icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .feature-title { font-weight: 800; font-size: 1.05rem; color: var(--main-black); margin-bottom: 8px; letter-spacing: -0.3px; }
+    .feature-desc { font-size: 0.9rem; color: #666; line-height: 1.5; margin: 0; }
+
+    .highlight-box {
+      background: var(--main-black);
+      color: #fff;
+      padding: 30px 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .highlight-quote { font-size: 1.25rem; font-weight: 800; margin: 0 0 10px 0; word-break: keep-all; line-height: 1.4; }
+    .highlight-sub { font-size: 0.9rem; color: #ccc; margin: 0 0 20px 0; }
+
+    .insta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: var(--main-black);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: 0.2s;
+    }
+
+    .insta-link:hover { transform: scale(1.05); }
+
+    @media (max-width: 500px) {
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+
+    /* --- [탭2] 운영진 소개 --- */
+    .staff-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .staff-card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: #fff;
+      border: 1px solid #eee;
+      padding: 20px;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: 0.2s ease-in-out;
+    }
+
+    .staff-card:hover {
+      border-color: var(--main-black);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .staff-thumb {
+      width: 85px !important;
+      height: 85px !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      object-position: center;
+      flex-shrink: 0 !important;
+      display: block;
+    }
+
+    .staff-info { flex: 1; min-width: 0; }
+    .staff-info h4 { margin: 0 0 5px 0; font-size: 1.2rem; color: #111; }
+    .staff-info p { margin: 0; font-size: 0.9rem; color: #777; font-weight: 500; }
+
+    /* --- 🌟 모달 (짤림 방지 완벽 세팅) --- */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px; /* 화면 테두리 보호 */
+    }
+
+    .modal-content {
+      background: #fff;
+      width: 100%;
+      max-width: 450px;
+      border-radius: 20px;
+      position: relative;
+      animation: modalUp 0.3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+      
+      /* ❗ 핵심: 모달이 화면 높이의 80%를 넘지 않도록 제한 */
+      max-height: 80vh; 
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* 모서리 둥근 부분 밖으로 콘텐츠가 삐져나가지 않게 함 */
+    }
+
+    /* JavaScript가 주입하는 데이터 래퍼 */
+    #modalData {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden; /* 헤더 고정, 바디 스크롤을 위한 필수 설정 */
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 2rem;
+      cursor: pointer;
+      color: #999;
+      z-index: 10;
+      line-height: 1;
+    }
+
+    /* 모달 헤더 (고정 영역) */
+    .modal-header { 
+      text-align: center; 
+      padding: 30px 20px 15px 20px; 
+      flex-shrink: 0; /* 내용이 많아져도 헤더는 찌그러지지 않게 방어 */
+      border-bottom: 1px solid #f0f0f0; 
+      background: #fff;
+    }
     
-    /* 팀 밸런스 결과 스타일 */
-    .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .team-card { background: #1e293b; padding: 15px; border-radius: 12px; border-top: 4px solid #3b82f6; }
-    .team-card.team-b { border-top-color: #f87171; }
-    .team-name { font-weight: 800; margin-bottom: 12px; display: block; text-align: center; letter-spacing: 1px; }
-    .team-member { font-size: 0.95rem; margin-bottom: 6px; color: #e2e8f0; display: flex; justify-content: space-between; }
-    .team-info { margin-top: 12px; padding-top: 10px; border-top: 1px solid #334155; font-size: 0.85rem; color: #9ca3af; text-align: center; }
+    .modal-header img {
+      width: 100px !important;
+      height: 100px !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      object-position: center;
+      margin-bottom: 10px;
+      border: 3px solid #f9f9f9;
+    }
 
-    /* 감독전 리스트 스타일 */
-    .director-list { list-style: none; padding: 0; margin: 0; }
-    .director-item { display: flex; justify-content: space-between; padding: 10px 14px; margin-bottom: 6px; background: #1e293b; border-radius: 8px; align-items: center; }
-    .tier-badge { background: #334155; color: #fff; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; min-width: 45px; text-align: center; }
-    .tier-badge.high-tier { background: #8b5cf6; } /* 1~3티어 강조 */
+    /* 🌟 모달 본문 (스크롤 영역) */
+    .modal-body {
+      padding: 20px 30px 30px 30px;
+      overflow-y: auto; /* ❗ 내용이 길어지면 여기에만 스크롤이 생김 */
+      flex: 1; /* ❗ 남은 공간을 모두 차지하도록 늘려줌 */
+    }
+    
+    /* 스크롤바 디자인 */
+    .modal-body::-webkit-scrollbar { width: 6px; }
+    .modal-body::-webkit-scrollbar-track { background: transparent; }
+    .modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
-    footer { text-align: center; margin-top: 25px; font-size: 0.75rem; color: #6b7280; }
+    .modal-body h4 { margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid #f5f5f5; padding-bottom: 8px; flex-shrink: 0;}
+    
+    .career-group { margin-bottom: 15px; }
+    .career-category {
+      display: inline-block;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--main-black);
+      background: #f0f0f0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
 
-    @media (max-width: 480px) {
-      .player-row { grid-template-columns: 1fr 60px 70px 30px; gap: 5px; }
-      .balance-grid { grid-template-columns: 1fr; } /* 모바일에서 팀 세로 배치 */
+    .modal-body ul {
+      padding-left: 20px;
+      font-size: 0.95rem;
+      color: #444;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .modal-body ul li { margin-bottom: 4px; }
+
+    /* --- [탭3] Q&A --- */
+    .btn-sns {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 16px; border-radius: 12px; text-decoration: none; font-weight: 700; color: #fff; margin-bottom: 12px; font-size: 1rem;
+    }
+    .kakao { background: #fee500; color: #3c1e1e; }
+    .insta { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
+
+    footer { text-align: center; padding: 40px 20px; font-size: 0.85rem; color: #aaa; background: #fafafa; }
+
+    /* 반응형: PC */
+    @media (min-width: 650px) {
+      .staff-container { grid-template-columns: repeat(3, 1fr); }
+      .staff-card { flex-direction: column; text-align: center; padding: 30px 20px; }
     }
   </style>
 </head>
-<body>
-  <div class="app">
-    <h1>SC Team & Director Tool</h1>
-    
-    <div class="mode-tabs">
-      <div class="tab-btn active" onclick="switchMode('balance')" id="tabBalance">팀 밸런스 (N:N)</div>
-      <div class="tab-btn" onclick="switchMode('director')" id="tabDirector">감독전 (티어순)</div>
-    </div>
-    
-    <div class="desc" id="modeDesc">인원을 추가하고 팀을 구성하세요. (저그 인원 및 티어 합 균등)</div>
 
-    <div id="playerInputs" class="player-list">
+<body>
+  <div class="app-container">
+    <header>
+      <img src="img_vlog_icon.png" alt="vlog 아이콘" class="header-logo" onclick="location.reload()" />
+      <p>당신의 가장 빛나는 순간을, VLog가 기록합니다.</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('apply')">배우 신청</button>
+      <button class="tab-btn" onclick="switchTab('staff')">DIRECTOR</button>
+      <button class="tab-btn" onclick="switchTab('qa')">Q&A</button>
+    </div>
+
+    <div class="content-area">
+      <div id="apply" class="tab-content active">
+        <a href="https://form.naver.com/..." target="_blank" class="btn-apply">2026 신입단원 가입 신청하기</a>
+
+        <h2>왜 VLog와 함께해야 할까요?</h2>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">✨</div>
+            <div class="feature-title">퀄리티 있는 프로필과 무대</div>
+            <p class="feature-desc">인생에 남을 멋진 배역 프로필과 완성도 높은 무대를 함께 만들어갑니다.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎭</div>
+            <div class="feature-title">과정의 '재미' 보장</div>
+            <p class="feature-desc">결과도 중요하지만, 연습하는 매 순간이 즐겁고 행복한 과정을 약속합니다.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🤝</div>
+            <div class="feature-title">책임 있는 운영 (보강제도)</div>
+            <p class="feature-desc">피치 못할 결석에도 안심하세요. 철저한 보강 제도로 끝까지 책임집니다.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📸</div>
+            <div class="feature-title">'기록'에 진심인 극단</div>
+            <p class="feature-desc">땀 흘리는 연습부터 무대 위 모습까지, 소중한 순간들을 빠짐없이 기록합니다.</p>
+          </div>
+        </div>
+
+        <div class="highlight-box">
+          <p class="highlight-quote">"당신의 가장 빛나는 순간을 VLog가 기록합니다."</p>
+          <p class="highlight-sub">더 궁금한 점이 있다면 언제든 편하게 DM으로 문의해 주세요 :)</p>
+          <a href="https://instagram.com/vlog_musical" target="_blank" class="insta-link">📸 @vlog_musical</a>
+        </div>
+
+        <h2>공연 포스터</h2>
+        <img src="img_wicked.png" alt="모집 포스터" class="poster-img" />
+
+        <h3>연습실 안내</h3>
+        <p style="font-size: 1rem; color: #666">📍 서울 성북구 동선동1가 85-101 (VLog 성신여대입구역 연습실)</p>
       </div>
 
-    <div class="controls">
-      <button class="ctrl-btn btn-add" onclick="addPlayerRow()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        인원 추가
-      </button>
-      <button class="ctrl-btn" onclick="removeLastPlayer()" style="background: #1e293b; color: #ef4444; border: 1px solid #334155;">
-         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        마지막 제거
-      </button>
-    </div>
+      <div id="staff" class="tab-content">
+        <h2>DIRECTOR</h2>
+        <!-- <p style="color: #888; margin-bottom: 25px; font-size: 0.9rem">이미지를 클릭하면 상세 경력을 볼 수 있습니다.</p> -->
 
-    <button id="actionBtn" class="main-btn" onclick="runAction()">팀 구성하기</button>
-
-    <div id="resultArea" class="result-area">
-        <div id="balanceResult" class="balance-grid">
-            <div class="team-card">
-                <span class="team-name" style="color: #60a5fa;">BLUE TEAM</span>
-                <div id="teamAList"></div>
-                <div class="team-info" id="teamAStat"></div>
+        <div class="staff-container">
+          <div class="staff-card" onclick="openModal('staff1')">
+            <img src="img_teacher_gayeon.jpg" alt="신가연" class="staff-thumb" />
+            <div class="staff-info">
+              <h4>신가연</h4>
+              <p>총괄 연출</p>
             </div>
-            <div class="team-card team-b">
-                <span class="team-name" style="color: #f87171;">RED TEAM</span>
-                <div id="teamBList"></div>
-                <div class="team-info" id="teamBStat"></div>
+          </div>
+          <div class="staff-card" onclick="openModal('staff2')">
+            <img src="img_teacher_chu.jpg" alt="추소연" class="staff-thumb" />
+            <div class="staff-info">
+              <h4>추소연</h4>
+              <p>음악 & 연기 코치</p>
             </div>
+          </div>
+          <div class="staff-card" onclick="openModal('staff3')">
+            <img src="https://picsum.photos/300/300?random=4" alt="안무 코치" class="staff-thumb" />
+            <div class="staff-info">
+              <h4>안무 코치</h4>
+              <p>안무 코치</p>
+            </div>
+          </div>
         </div>
-        <ul id="directorResult" class="director-list" style="display: none;"></ul>
+      </div>
+
+      <div id="qa" class="tab-content">
+        <h2>자주 묻는 질문</h2>
+        <div class="section-box">
+          <p style="margin-bottom: 15px"><strong>Q. 가입 신청 후 절차가 궁금해요.</strong><br />A. 신청서 검토 후 개별 연락을 드리며, 가벼운 미팅을 진행합니다.</p>
+          <p><strong>Q. 활동비는 얼마인가요?</strong><br />A. 연습실 대관료 및 공연 제작비를 위해 매월 소정의 단비가 책정됩니다.</p>
+        </div>
+
+        <h3>문의 채널</h3>
+        <div class="sns-links">
+          <a href="https://open.kakao.com" target="_blank" class="btn-sns kakao">💬 카카오톡 오픈채팅 문의</a>
+          <a href="https://instagram.com" target="_blank" class="btn-sns insta">📸 @vlog_musical</a>
+        </div>
+      </div>
     </div>
 
-    <footer>Clean UI • Local Processing • No Server Needed</footer>
+    <footer>&copy; 2026 THEATER TROUPE VLog. All rights reserved.</footer>
+  </div>
+
+  <div id="staffModal" class="modal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <span class="close-modal" onclick="document.getElementById('staffModal').style.display = 'none'">&times;</span>
+      <div id="modalData"></div>
+    </div>
   </div>
 
   <script>
-    let currentMode = 'balance'; // 'balance' or 'director'
-    let playerCount = 0;
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-btn").forEach((btn) => btn.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach((content) => content.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+      const targetBtn = Array.from(document.querySelectorAll(".tab-btn")).find((btn) => btn.getAttribute("onclick").includes(tabId));
+      if (targetBtn) targetBtn.classList.add("active");
+      window.scrollTo(0, 0);
+    }
 
-    // 초기 실행: 6명 세팅
-    window.onload = () => {
-        for(let i=0; i<6; i++) addPlayerRow();
+    const staffData = {
+      staff1: {
+        name: "신가연",
+        role: "총괄 연출",
+        img: "img_teacher_gayeon.jpg",
+        career: [
+          {
+            category: "학력",
+            items: [
+              "중앙대학교 첨단영상대학원 영상학과 연출 석사 졸업"
+            ]
+          },
+          {
+            category: "단편 <겨울은 겨울> (2017) 감독",
+            items: [
+              "영진위 제작지원작",
+              "인디스토리 배급",
+              "22회 부천국제판타스틱 영화제 상영",
+              "대학영화제 대상 수상"
+            ]
+          },
+          {
+            category: "단편 <일렁일렁> (2020) 감독",
+            items: [
+              "영진위 뉴미디어 영상콘텐츠 제작지원작",
+              "인디스토리 배급"
+            ]
+          },
+          {
+            category: "단편 <CONTACT> (2022) 감독",
+            items: [
+              "한국문화예술진흥위원회 / 안은미 컴퍼니 제작지원작",
+            ]
+          }
+        ]
+      },
+      staff2: {
+        name: "추소연",
+        role: "음악 & 연기 코치",
+        img: "img_teacher_chu.jpg",
+        career: [
+          {
+            category: "방송",
+            items: [
+              "2017 웹드라마 <굿모닝 이층버스> 학생 단역",
+              "2026 단편영화 <이벤트> 지수 역"
+            ]
+          },
+          {
+            category: "연극",
+            items: [
+              "2021~2022 <한 여름밤의 꿈> 요정 역 | 이효숙 연출",
+              "2023 <살고싶어 죽겠어요> 의사, 기자 역 | 장윤호 연출",
+              "2023 <굿닥터> 아내, 치과조수, 여자, 직원 역 | 박수철 연출",
+              "2023 김제시 <콩쥐팥쥐> 팥쥐 역 | 고혜미 연출",
+              "2024 <DIE> 줄리엣 역 | 장윤호 연출",
+              "2024 <머더> 강예은 역 | 김윤재 연출",
+              "2025 <영겁의 방> 시은빈 역 | 이민수 연출",
+              "2025 <더 투나잇 쇼> 기자 역 | 이민수 연출",
+            ]
+          },
+          {
+            category: "뮤지컬",
+            items: [
+              "2024 <나도, 밤나무> 사깨비 역 | 박현철 연출",
+              "2024~2025 <너와 나 이곳에 우리> 세아 역 (주연) | 김윤재 연출",
+              "2025 <지구용사 푸름이> 푸름이 역 (주연) | 김지선 연출",
+              "2025 <나도, 밤나무> 현룡 역 (주연) | 박현철 연출"
+            ]
+          }
+        ]
+      },
+      staff3: {
+        name: "안무 코치",
+        role: "안무 코치",
+        img: "https://picsum.photos/300/300?random=4",
+        career: [
+          {
+            category: "학력 및 이력",
+            items: [
+              "한예종 현대무용 전공",
+              "국립현대무용단 프로젝트 단원"
+            ]
+          },
+          {
+            category: "안무 및 교육",
+            items: [
+              "연극 '움직이는 밤' 안무 총괄",
+              "신체 표현 워크숍 전문 강사"
+            ]
+          }
+        ]
+      }
     };
 
-    // 모드 전환 함수
-    function switchMode(mode) {
-        currentMode = mode;
-        document.getElementById('tabBalance').classList.toggle('active', mode === 'balance');
-        document.getElementById('tabDirector').classList.toggle('active', mode === 'director');
-        
-        const actionBtn = document.getElementById('actionBtn');
-        const modeDesc = document.getElementById('modeDesc');
-        document.getElementById('resultArea').style.display = 'none';
+    function openModal(id) {
+      const data = staffData[id];
+      
+      const careerHtml = data.career.map(group => `
+        <div class="career-group">
+          <div class="career-category">[${group.category}]</div>
+          <ul>
+            ${group.items.map(item => `<li>${item}</li>`).join("")}
+          </ul>
+        </div>
+      `).join("");
 
-        if (mode === 'balance') {
-            actionBtn.innerText = '팀 구성하기';
-            actionBtn.classList.remove('director-color');
-            modeDesc.innerText = '인원을 추가하고 팀을 구성하세요. (저그 인원 및 티어 합 균등)';
-        } else {
-            actionBtn.innerText = '티어순 리스트 보기';
-            actionBtn.classList.add('director-color');
-            modeDesc.innerText = '모든 인원을 티어가 높은 순서대로 정렬합니다.';
-        }
+      const html = `
+        <div class="modal-header">
+          <img src="${data.img}" alt="${data.name}">
+          <h3>${data.name}</h3>
+          <p style="color:#777; font-weight:500; margin:0;">${data.role}</p>
+        </div>
+        <div class="modal-body">
+          <h4>주요 경력</h4>
+          ${careerHtml}
+        </div>
+      `;
+      document.getElementById("modalData").innerHTML = html;
+      document.getElementById("staffModal").style.display = "flex";
     }
 
-    // 플레이어 입력줄 추가
-    function addPlayerRow() {
-        playerCount++;
-        const container = document.getElementById('playerInputs');
-        const row = document.createElement('div');
-        row.className = 'player-row';
-        row.id = `pRow-${playerCount}`;
-        row.innerHTML = `
-          <input type="text" placeholder="이름" class="p-name">
-          <select class="p-race">
-            <option value="R">R</option>
-            <option value="Z">Z</option>
-            <option value="T">T</option>
-            <option value="P">P</option>
-          </select>
-          <select class="p-tier">
-            ${[1,2,3,4,5,6,7,8,9,10].map(t => `<option value="${t}" ${t===5 ? 'selected':''}>${t}티어</option>`).join('')}
-          </select>
-          <div class="remove-btn" onclick="removeSpecificRow('${row.id}')">✕</div>
-        `;
-        container.appendChild(row);
-        // 스크롤을 가장 아래로
-        container.scrollTop = container.scrollHeight;
+    function closeModal(e) {
+      if (e.target.id === "staffModal") {
+        document.getElementById("staffModal").style.display = "none";
+      }
     }
-
-    // 마지막 플레이어 제거
-    function removeLastPlayer() {
-        const container = document.getElementById('playerInputs');
-        if (container.lastChild) {
-            container.removeChild(container.lastChild);
-        }
-    }
-
-    // 특정 줄 플레이어 제거
-    function removeSpecificRow(rowId) {
-        const row = document.getElementById(rowId);
-        if (row) row.remove();
-    }
-
-    // 현재 입력된 모든 플레이어 데이터 가져오기
-    function getAllPlayers() {
-        const rows = document.querySelectorAll('.player-row');
-        let players = [];
-        rows.forEach((row, index) => {
-            const nameInput = row.querySelector('.p-name');
-            const raceSelect = row.querySelector('.p-race');
-            const tierSelect = row.querySelector('.p-tier');
-            if (nameInput && raceSelect && tierSelect) {
-                 players.push({
-                    name: nameInput.value.trim() || `선수 ${index + 1}`,
-                    race: raceSelect.value,
-                    tier: parseInt(tierSelect.value)
-                });
-            }
-        });
-        return players;
-    }
-
-    // 메인 실행 버튼 클릭 시 분기
-    function runAction() {
-        const players = getAllPlayers();
-        if (players.length === 0) {
-            alert("선수를 최소 1명 이상 입력해주세요.");
-            return;
-        }
-        
-        document.getElementById('resultArea').style.display = 'block';
-
-        if (currentMode === 'balance') {
-            runBalanceMode(players);
-        } else {
-            runDirectorMode(players);
-        }
-    }
-
-    // --- 감독전 모드 로직 ---
-    function runDirectorMode(players) {
-        document.getElementById('balanceResult').style.display = 'none';
-        const listContainer = document.getElementById('directorResult');
-        listContainer.style.display = 'block';
-
-        // 티어 오름차순 정렬 (1티어가 먼저)
-        players.sort((a, b) => a.tier - b.tier);
-
-        listContainer.innerHTML = players.map(p => `
-            <li class="director-item">
-                <div>
-                    <span style="color: ${getRaceColor(p.race)}; font-weight:bold; margin-right: 8px;">[${p.race}]</span>
-                    ${p.name}
-                </div>
-                <span class="tier-badge ${p.tier <= 3 ? 'high-tier' : ''}">${p.tier}티어</span>
-            </li>
-        `).join('');
-    }
-
-    // --- 팀 밸런스 모드 로직 ---
-    function runBalanceMode(players) {
-        if (players.length % 2 !== 0 || players.length === 0) {
-            alert("팀 밸런스를 맞추려면 총 인원이 짝수여야 합니다. (예: 2:2, 3:3, 4:4)");
-            document.getElementById('resultArea').style.display = 'none';
-            return;
-        }
-
-        document.getElementById('directorResult').style.display = 'none';
-        document.getElementById('balanceResult').style.display = 'grid';
-
-        const teamSize = players.length / 2;
-        const combinations = getCombinations(players, teamSize);
-        
-        let bestSplit = null;
-        // 초기값 설정 (가장 나쁜 경우로 시작)
-        let minZergDiff = players.length + 1;
-        let minTierDiff = players.length * 10 + 1;
-
-        combinations.forEach(teamA => {
-            // teamA에 속하지 않은 나머지 인원을 teamB로 설정
-            const teamB = players.filter(p => !teamA.some(ta => ta.name === p.name && ta.race === p.race && ta.tier === p.tier));
-            
-            const statsA = calculateStats(teamA);
-            const statsB = calculateStats(teamB);
-
-            const zergDiff = Math.abs(statsA.zergCount - statsB.zergCount);
-            const tierDiff = Math.abs(statsA.totalTier - statsB.totalTier);
-
-            // 1순위: 저그 수 차이 최소화
-            if (zergDiff < minZergDiff) {
-                minZergDiff = zergDiff;
-                minTierDiff = tierDiff;
-                bestSplit = { teamA, teamB, statsA, statsB };
-            } 
-            // 2순위: 저그 수 차이가 같다면, 티어 합 차이 최소화
-            else if (zergDiff === minZergDiff) {
-                if (tierDiff < minTierDiff) {
-                    minTierDiff = tierDiff;
-                    bestSplit = { teamA, teamB, statsA, statsB };
-                }
-            }
-        });
-
-        if (bestSplit) displayBalanceResult(bestSplit);
-    }
-
-    function calculateStats(team) {
-        return {
-            zergCount: team.filter(p => p.race === 'Z').length,
-            totalTier: team.reduce((sum, p) => sum + p.tier, 0)
-        };
-    }
-
-    // 조합 구하기 알고리즘 (재귀)
-    function getCombinations(arr, n) {
-        if (n === 1) return arr.map(el => [el]);
-        const result = [];
-        arr.forEach((fixed, idx, origin) => {
-            const rest = origin.slice(idx + 1);
-            const combos = getCombinations(rest, n - 1);
-            const attached = combos.map(combo => [fixed, ...combo]);
-            result.push(...attached);
-        });
-        return result;
-    }
-
-    function displayBalanceResult(res) {
-        const renderTeamList = (list, targetId) => {
-            document.getElementById(targetId).innerHTML = list.map(p => `
-              <div class="team-member">
-                <span><span style="color: ${getRaceColor(p.race)}">[${p.race}]</span> ${p.name}</span>
-                <span style="opacity:0.8;">T${p.tier}</span>
-              </div>
-            `).join('');
-        };
-
-        renderTeamList(res.teamA, 'teamAList');
-        document.getElementById('teamAStat').innerHTML = `티어 합: <b>${res.statsA.totalTier}</b> / 저그: <b>${res.statsA.zergCount}</b>명`;
-
-        renderTeamList(res.teamB, 'teamBList');
-        document.getElementById('teamBStat').innerHTML = `티어 합: <b>${res.statsB.totalTier}</b> / 저그: <b>${res.statsB.zergCount}</b>명`;
-    }
-
-    function getRaceColor(race) {
-        if (race === 'Z') return '#d8b4fe'; // 연보라
-        if (race === 'R') return '#9ca3af'; // 회색 (랜덤)
-        if (race === 'T') return '#60a5fa'; // 파랑
-        if (race === 'P') return '#fde047'; // 노랑
-        return '#fff';
-    }
-
   </script>
 </body>
+
 </html>
